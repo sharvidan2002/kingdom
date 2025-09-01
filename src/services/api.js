@@ -5,14 +5,15 @@ import toast from 'react-hot-toast'
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   timeout: 30000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true // Important for CORS
 })
-
-
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
+    console.log('Making API request:', config.method?.toUpperCase(), config.url); // Debug log
+
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
@@ -20,6 +21,7 @@ api.interceptors.request.use(
     return config
   },
   (error) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error)
   }
 )
@@ -27,9 +29,19 @@ api.interceptors.request.use(
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
+    console.log('API response received:', response.status, response.config.url); // Debug log
     return response
   },
   (error) => {
+    console.error('API Error Details:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+      method: error.config?.method
+    });
+
     const message = error.response?.data?.message || error.message || 'An error occurred'
 
     // Handle specific error cases
@@ -46,6 +58,8 @@ api.interceptors.response.use(
       toast.error('Resource not found')
     } else if (error.response?.status >= 500) {
       toast.error('Server error. Please try again later.')
+    } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+      toast.error('Network error. Please check your connection and ensure the backend is running.')
     }
 
     return Promise.reject(error)
@@ -100,7 +114,7 @@ export const downloadFile = async (url, filename) => {
 // Helper function to check API health
 export const checkApiHealth = async () => {
   try {
-    const response = await axios.get('/api/health', { timeout: 5000 })
+    const response = await api.get('/health', { timeout: 5000 })
     return response.data
   } catch (error) {
     throw new Error('API is not responding')
