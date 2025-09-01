@@ -14,7 +14,8 @@ import {
   Youtube,
   Eye,
   Copy,
-  Edit3
+  Edit3,
+  Calendar
 } from 'lucide-react'
 import { formatDate, getContentTypeInfo, copyToClipboard } from '../../utils/helpers'
 import { useVoice } from '../../hooks/useVoice'

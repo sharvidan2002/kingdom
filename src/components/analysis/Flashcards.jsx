@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, RotateCcw, Shuffle, Volume2, Check, X } from 'lucide-react'
 import { useVoice } from '../../hooks/useVoice'
 import { EmptyState } from '../common/ErrorMessage'
